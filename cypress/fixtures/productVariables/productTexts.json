@@ -1,0 +1,17 @@
+{
+  "categories": {
+    "phones": "Phones",
+    "laptops": "Laptops"
+  },
+  "productIndexes": {
+    "firstPhone": 0,
+    "secondLaptop": 1
+  },
+  "alerts": {
+    "productAdded": "Product added"
+  },
+  "navigation": {
+    "home": "Home",
+    "cart": "Cart"
+  }
+}
