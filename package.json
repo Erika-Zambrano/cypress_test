@@ -8,12 +8,23 @@
     "cy:run": "cypress run",
     "cy:run:chrome": "cypress run --browser chrome",
     "test:e2e": "cypress run --browser chrome --spec \"cypress/e2e/add-products-to-cart.cy.ts\"",
-    "test:visual": "cypress run --browser chrome --spec \"cypress/e2e/visual/home-page-visual.cy.ts\""
+    "test:visual": "cypress run --browser chrome --spec \"cypress/e2e/visual/home-page-visual.cy.ts\"",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"cypress/**/*.ts\" \"*.{ts,js,json}\"",
+    "format:check": "prettier --check \"cypress/**/*.ts\" \"*.{ts,js,json}\""
   },
   "devDependencies": {
     "@testing-library/cypress": "^10.1.3",
+    "@typescript-eslint/eslint-plugin": "^8.70.0",
+    "@typescript-eslint/parser": "^8.70.0",
     "cypress": "^13.6.0",
     "cypress-plugin-steps": "^1.2.1",
+    "eslint": "^10.10.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-chai-friendly": "^1.2.1",
+    "eslint-plugin-cypress": "^7.0.2",
+    "prettier": "^3.9.7",
     "typescript": "^5.4.0"
   }
 }

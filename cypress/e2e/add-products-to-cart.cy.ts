@@ -47,7 +47,7 @@ describe('Should be able to add two items and validate the total price in the ca
       firstPhonePrice = price;
     });
 
-    cy.step('Adding first phone to the cart')
+    cy.step('Adding first phone to the cart');
     alertComponent.registerAlertListener();
     productDetailPage.addToCart();
     alertComponent.assertAlertMessageEquals(productVariables.alerts.productAdded);
@@ -74,7 +74,7 @@ describe('Should be able to add two items and validate the total price in the ca
 
     alertComponent.registerAlertListener();
 
-    cy.step('Adding laptop to the cart')
+    cy.step('Adding laptop to the cart');
     productDetailPage.addToCart();
     alertComponent.assertAlertMessageEquals(productVariables.alerts.productAdded);
 
@@ -107,8 +107,8 @@ describe('Should be able to add two items and validate the total price in the ca
               actualProduct.name === expectedProduct.name && actualProduct.price === expectedProduct.price,
           );
 
-          expect(matchingCartRow, `cart row matching "${expectedProduct.name}" ($${expectedProduct.price})`).to
-            .exist;
+          expect(matchingCartRow, `cart row matching "${expectedProduct.name}" ($${expectedProduct.price})`)
+            .to.exist;
         });
       });
 

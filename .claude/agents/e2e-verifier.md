@@ -6,16 +6,20 @@ model: sonnet
 ---
 
 Tu trabajo es verificar, no confiar. Nunca reportes un cambio como "listo" o
-"funciona" sin haber corrido estos tres pasos en esta misma sesión:
+"funciona" sin haber corrido estos pasos en esta misma sesión:
 
 1. `npx tsc --noEmit` — debe terminar sin output ni errores.
-2. `npx cypress run --browser chrome --spec "<spec afectado>"` — debe
+2. `npm run lint` — debe terminar sin errores (ESLint, scoped a
+   `cypress/**/*.ts` y los archivos de config).
+3. `npm run format:check` — si falla, correr `npm run format` y volver a
+   verificar; no dejar código sin formatear.
+4. `npx cypress run --browser chrome --spec "<spec afectado>"` — debe
    terminar con `All specs passed!`. Si el cambio tocó un Page Object
    compartido, un archivo de `cypress/support/`, `cypress.config.ts` o
    `tsconfig.json`, corré **ambos** specs
    (`cypress/e2e/add-products-to-cart.cy.ts` y
    `cypress/e2e/visual/home-page-visual.cy.ts`), no solo uno.
-3. Limpiar `cypress/videos/` y `cypress/screenshots/` generados por la
+5. Limpiar `cypress/videos/` y `cypress/screenshots/` generados por la
    corrida — son artifacts gitignorados, no parte del entregable.
 
 Si algo falla, no adivines la causa solo por el mensaje de error. Este sitio

@@ -55,6 +55,9 @@ cypress/
   agents/
     e2e-verifier.md                  Agent that runs specs for real before calling anything "done"
 cypress.config.ts
+eslint.config.js
+.prettierrc.json
+.prettierignore
 package.json
 tsconfig.json
 README.md
@@ -86,6 +89,10 @@ npm install
 | `npm run cy:run:chrome` | Run all specs headlessly in Chrome                        |
 | `npm run test:e2e`      | Run the main functional scenario in Chrome                |
 | `npm run test:visual`   | Run the visual snapshot test in Chrome                    |
+| `npm run lint`          | Check code with ESLint                                    |
+| `npm run lint:fix`      | Check code with ESLint, auto-fixing what it can            |
+| `npm run format`        | Format code with Prettier                                  |
+| `npm run format:check`  | Check formatting without changing any file                |
 
 ## Running Tests Locally
 
@@ -188,16 +195,18 @@ File: `.github/workflows/cypress.yml`
   open/update events or on pushes to other branches, so pull requests are not
   validated before merge; the pipeline is a post-merge safety net.
 - Runs on `ubuntu-latest` with a reproducible `npm ci` install.
-- Two independent jobs, `e2e-tests` and `visual-tests`, each run their own
-  spec in Chrome (`--browser chrome`), so a failure in either job is clearly
-  attributable to that job in the GitHub Actions UI.
+- Three independent jobs: `lint` (ESLint + Prettier check, no browser
+  needed), `e2e-tests`, and `visual-tests` (each running their own spec in
+  Chrome via `--browser chrome`), so a failure in any one of them is
+  clearly attributable to that job in the GitHub Actions UI.
 - Screenshots and videos are uploaded as artifacts only when a job fails
   (`if: failure()`), keeping successful runs free of unnecessary artifacts.
 
 ## Slack Notifications
 
-A third job, `notify-on-failure`, depends on both test jobs and only runs
-when one of them fails (`if: failure()`). It posts a message to a Slack
+A fourth job, `notify-on-failure`, depends on `lint`, `e2e-tests`, and
+`visual-tests`, and only runs when one of them fails (`if: failure()`). It
+posts a message to a Slack
 Incoming Webhook containing the failure status, the configured owner
 mention, the repository, branch, short commit SHA, workflow name, and a
 direct link to the failed run.
@@ -239,6 +248,17 @@ Configure the following in the repository (Settings → Secrets and variables �
   `tsconfig-paths-webpack-plugin`), so the aliases work both for
   type-checking (`tsc --noEmit`) and when actually running a spec, with no
   extra dependency or `cypress.config.ts` change required.
+- Code style is enforced with ESLint (flat config, `eslint.config.js`) and
+  Prettier, kept intentionally small: `@typescript-eslint` (recommended,
+  non type-checked, to avoid the overhead of wiring `parserOptions.project`)
+  plus `eslint-plugin-cypress` for Cypress-specific rules. Chai's BDD
+  assertions (e.g. `expect(x).to.exist`) are exempted from
+  `no-unused-expressions` via the tiny (zero-dependency)
+  `eslint-plugin-chai-friendly`, since a bare property-access assertion
+  chain looks unused to that rule but isn't. `eslint-config-prettier`
+  disables any ESLint stylistic rule that would conflict with Prettier.
+  Both tools are scoped to `cypress/**/*.ts` and the project's own config
+  files, not to `docs/` or Markdown.
 
 ## AI
 
@@ -271,6 +291,32 @@ conventions without having to restate them. They are checked into the repo
   spec(s) against Chrome and the real site, then cleans up
   `cypress/videos`/`cypress/screenshots`. Exists so "done" always means
   "ran green just now," not "compiles" or "looks right."
+
+### Future AI ideas (not implemented yet)
+
+These are documented here as candidates to adopt later, not shipped in this
+repo today — the point is to record the idea so it doesn't have to be
+rediscovered, not to build it now.
+
+- **A `full-code-review` skill** — a pre-flight review that combines a local
+  `/code-review` command with a simulation of a CI review bot's exact
+  criteria, run before opening a PR. It can't be added as-is yet because
+  this repo has neither artifact for it to read (no local `/code-review`
+  command defined, no CI-hosted review-bot prompt to simulate). Adding it
+  later means defining one of those two first.
+- **Narrow, single-file maintenance agents** — for example, an agent scoped
+  only to `cypress/fixtures/productVariables/productTexts.json`, whose one
+  job is to check that its stable values (category names, alert text,
+  indexes) still match the live site, and to refuse any edit that would
+  sneak in a hardcoded product name or price — the one rule that fixture
+  must never break. The general idea: instead of one broad reviewer, add a
+  small agent per file/concern that needs a standing guardrail.
+- **A GitHub PR review bot** — an automated reviewer (e.g. a GitHub Action
+  running Claude against the diff) that comments directly on incoming pull
+  requests. This is the GitHub equivalent of the GitLab bot that
+  `full-code-review` was originally built to simulate locally. This repo's
+  CI (`.github/workflows/cypress.yml`) only runs the E2E/visual suite today;
+  it does not include a review bot.
 
 ## Scalability Approach
 

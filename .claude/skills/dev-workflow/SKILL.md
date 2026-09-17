@@ -28,10 +28,14 @@ mostrado antes los cambios y sin aprobación explícita.
 3. **Verificar antes de mostrar cambios como terminados**:
    ```bash
    npx tsc --noEmit
+   npm run lint
+   npm run format:check
    npx cypress run --browser chrome --spec "<spec afectado>"
    ```
-   No reportar algo como "listo" solo porque compila — tiene que correr de
-   verdad contra `https://www.demoblaze.com` y mostrar `All specs passed!`.
+   No reportar algo como "listo" solo porque compila o porque el lint pasa —
+   tiene que correr de verdad contra `https://www.demoblaze.com` y mostrar
+   `All specs passed!`. Si `format:check` falla, correr `npm run format`
+   antes de mostrar el diff final (no dejar código sin formatear).
 4. **Mostrar cambios y ESPERAR APROBACIÓN** — resumen de qué cambió, archivos
    tocados, evidencia real de que corrió en verde. Preguntar explícitamente
    antes de hacer el commit. Nunca commitear automáticamente, aunque se pida
