@@ -1,0 +1,82 @@
+name: Cypress E2E Tests
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  e2e-tests:
+    name: Run E2E scenario (Chrome)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run E2E scenario in Chrome
+        run: npm run test:e2e
+
+      - name: Upload E2E failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-failure-evidence
+          path: |
+            cypress/screenshots
+            cypress/videos
+          if-no-files-found: ignore
+
+  visual-tests:
+    name: Run visual test (Chrome)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run visual test in Chrome
+        run: npm run test:visual
+
+      - name: Upload visual failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-failure-evidence
+          path: |
+            cypress/screenshots
+            cypress/videos
+          if-no-files-found: ignore
+
+  notify-on-failure:
+    name: Notify Slack on failure
+    runs-on: ubuntu-latest
+    needs: [e2e-tests, visual-tests]
+    if: failure()
+    steps:
+      - name: Send Slack failure notification
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          TEST_OWNER_TAG: ${{ vars.TEST_OWNER_TAG }}
+        run: |
+          SHORT_SHA=$(echo "${GITHUB_SHA}" | cut -c1-7)
+          curl --fail -sS -X POST \
+            -H 'Content-type: application/json' \
+            --data "{\"text\": \":rotating_light: Cypress E2E tests failed.\nOwner: ${TEST_OWNER_TAG}\nRepository: ${GITHUB_REPOSITORY}\nBranch: ${GITHUB_REF_NAME}\nCommit: ${SHORT_SHA}\nWorkflow: ${GITHUB_WORKFLOW}\nRun: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}\"}" \
+            "$SLACK_WEBHOOK_URL"
