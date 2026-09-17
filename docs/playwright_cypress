@@ -1,0 +1,9 @@
+| Playwright                                        | Cypress nativo                                              | Cypress + Testing Library                         |
+| ------------------------------------------------- | ----------------------------------------------------------- | ------------------------------------------------- |
+| page.getByRole('button', { name: 'Add to cart' }) | cy.contains('button', 'Add to cart')                        | cy.findByRole('button', { name: /add to cart/i }) |
+| page.getByText('Phones')                          | cy.contains('a', 'Phones')                                  | cy.findByText('Phones')                           |
+| page.getByLabel('Email')                          | cy.get('label').contains('Email')... o selector de atributo | cy.findByLabelText('Email')                       |
+| page.getByPlaceholder('Search')                   | cy.get('[placeholder="Search"]')                            | cy.findByPlaceholderText('Search')                |
+| page.getByTestId('submit-button')                 | cy.get('[data-testid="submit-button"]')                     | cy.findByTestId('submit-button')                  |
+| page.locator('[data-cy="add-to-cart"]')           | cy.get('[data-cy="add-to-cart"]')                           | —                                                 |
+

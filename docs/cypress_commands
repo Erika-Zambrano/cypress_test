@@ -1,0 +1,73 @@
+# Comandos de Cypress — referencia rápida
+
+Hay dos capas: los comandos reales de la CLI de Cypress, y los scripts de
+`package.json` de este proyecto que son solo atajos sobre esos comandos.
+
+## Los dos comandos base
+
+| Comando          | Qué hace                                                                 |
+| ---------------- | ------------------------------------------------------------------------- |
+| `cypress open`   | Abre la app interactiva (GUI) de Cypress. Ves el browser en vivo, eliges qué spec correr, y tienes time-travel entre comandos (clic en cualquier paso del Command Log para ver el snapshot del DOM en ese momento). |
+| `cypress run`    | Corre los tests en modo headless (sin ventana visible) y termina. Pensado para CI o para correr rápido sin mirar. |
+
+Siempre se invocan con `npx` porque Cypress está instalado como dependencia
+local del proyecto, no global: `npx cypress open`, ``.
+
+## Flags más usados con `cypress run`
+
+| Flag                    | Para qué sirve                                                          | Ejemplo |
+| ------------------------ | ------------------------------------------------------------------------- | ------- |
+| `--browser <nombre>`     | Elegir el browser (`chrome`, `firefox`, `edge`, `electron` por defecto). | `--browser chrome` |
+| `--spec "<ruta>"`        | Correr solo un spec (o un patrón) en vez de todos.                      | `--spec "cypress/e2e/add-products-to-cart.cy.ts"` |
+| `--headed`               | Corre `cypress run` pero mostrando el browser (por defecto `run` es headless). | `--headed` |
+| `--no-exit`              | Deja el browser abierto después de terminar (solo tiene sentido con `--headed`). | `--headed --no-exit` |
+| `--config <clave=valor>` | Sobreescribe algo de `cypress.config.ts` sin editar el archivo.         | `--config viewportWidth=1920` |
+| `--env <clave=valor>`    | Pasa variables de entorno accesibles con `Cypress.env('clave')`.        | `--env foo=bar` |
+
+## Cómo se traduce esto en los scripts de este proyecto
+
+Todo lo de abajo está en `package.json`, así que en la práctica casi nunca vas
+a escribir el comando completo — usas el script de `npm run`.
+
+| Script (`npm run ...`) | Comando real que ejecuta                                                                          |
+| ------------------------ | --------------------------------------------------------------------------------------------------- |
+| `cy:open`                | `cypress open`                                                                                      |
+| `cy:run`                 | `cypress run` (todos los specs, browser Electron por defecto)                                       |
+| `cy:run:chrome`          | `cypress run --browser chrome` (todos los specs, en Chrome)                                          |
+| `test:e2e`               | `cypress run --browser chrome --spec "cypress/e2e/add-products-to-cart.cy.ts"` (solo el spec principal) |
+| `test:visual`            | `cypress run --browser chrome --spec "cypress/e2e/visual/home-page-visual.cy.ts"` (solo el visual)   |
+
+## Casos concretos que vas a necesitar seguido
+
+**Ver el spec principal correr en vivo, con la GUI:**
+```bash
+npm run cy:open
+```
+(y adentro haces clic en `add-products-to-cart.cy.ts`)
+
+**Correr un solo spec, headless, rápido, para saber si pasa:**
+```bash
+npm run test:e2e
+```
+
+**Correr un solo spec, pero VIENDO el browser, sin abrir la GUI completa:**
+```bash
+npx cypress run --headed --browser chrome --spec "cypress/e2e/add-products-to-cart.cy.ts"
+```
+
+**Correr TODO (los dos specs) en Chrome, headless:**
+```bash
+npm run cy:run:chrome
+```
+
+**Correr un spec distinto al que ya tiene script (por si agregas uno nuevo mañana):**
+```bash
+npx cypress run --browser chrome --spec "cypress/e2e/nuevo-spec.cy.ts"
+```
+
+## Evidencia cuando algo falla
+
+- `cypress/videos/` — video de la corrida completa (solo con `cypress run`, no con `open`).
+- `cypress/screenshots/` — capturas automáticas en cada fallo.
+
+Ambas carpetas están en `.gitignore`, se regeneran solas en cada corrida.
