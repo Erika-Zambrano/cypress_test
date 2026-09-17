@@ -1,0 +1,97 @@
+# ESLint + Prettier en este repo — referencia rápida
+
+## La diferencia entre las dos herramientas
+
+- **ESLint** revisa el *código* — patrones que pueden ser bugs o malas
+  prácticas (una variable que nunca se usa, una expresión sin efecto, un
+  `await` faltante). No toca espacios ni comillas.
+- **Prettier** revisa el *formato* — indentación, comillas, punto y coma,
+  ancho de línea. No sabe nada de lógica, solo de cómo se ve el texto.
+
+Se complementan: ESLint atrapa el typo real que causó todo esto
+(`cy.step('...')` sin `;` — ver `docs/roadmap.md`, punto 5), Prettier lo
+arregla solo sin que nadie lo discuta en un review.
+
+## Qué se instaló y por qué (setup chico a propósito)
+
+| Paquete | Para qué |
+|---|---|
+| `eslint` | El motor. |
+| `@typescript-eslint/parser` + `@typescript-eslint/eslint-plugin` | Que ESLint entienda sintaxis de TypeScript y tenga reglas específicas de TS. Usamos el preset `recommended` (no `recommended-type-checked`) — **a propósito, no por descuido**: la variante con type-checking necesita `parserOptions.project` apuntando al `tsconfig.json` y hace el lint más lento; para un repo de este tamaño no vale la pena la complejidad extra. |
+| `eslint-plugin-cypress` | Reglas específicas de Cypress (ej. prohíbe asignar el resultado de un comando de Cypress a una variable con `=`, ver `docs/roadmap.md` sobre por qué eso rompe el modelo async de Cypress). |
+| `eslint-plugin-chai-friendly` | Sin esto, `expect(x).to.exist` (una assertion válida de Chai) se marca como error por la regla `no-unused-expressions` — porque termina en un acceso a propiedad (`.exist`), no en una llamada de función, y ESLint no sabe que Chai usa getters con efecto secundario. Es un paquete de una sola regla, cero dependencias. |
+| `eslint-config-prettier` | Apaga cualquier regla de ESLint que compita con Prettier por el formato (para no tener dos herramientas peleando por la misma línea). |
+| `prettier` | El formateador. |
+
+No se instaló ningún preset gigante (ni `eslint-config-airbnb`, ni
+`@eslint/js` con todas sus reglas) — solo lo que este repo específicamente
+necesita.
+
+## Dónde vive la configuración
+
+- `eslint.config.js` — config "flat" (formato moderno de ESLint, el único
+  que soporta ESLint 9+). Ámbito: **solo** `cypress/**/*.ts` y
+  `cypress.config.ts`. No toca `docs/`, `README.md`, ni los `SKILL.md`.
+- `.prettierrc.json` — reglas de formato (comillas simples, punto y coma
+  siempre, `printWidth: 110` porque ya había líneas del proyecto llegando a
+  111 caracteres antes de este setup).
+- `.prettierignore` — carpetas que Prettier nunca debe tocar
+  (`node_modules`, `cypress/videos`, `cypress/screenshots`,
+  `cypress/downloads`, `package-lock.json`, `docs`).
+
+**Ojo con el scope**: los scripts de `package.json` (`lint`, `format`) NO
+corren sobre todo el repo con `.` a secas para Prettier — corren sobre
+`"cypress/**/*.ts" "*.{ts,js,json}"` explícitamente. Esto es deliberado:
+correr Prettier sobre `docs/**/*.md` reformatearía notas personales de
+prosa como efecto secundario de un cambio que era sobre código, no sobre
+Markdown.
+
+## Comandos
+
+```bash
+npm run lint          # ESLint, solo reporta
+npm run lint:fix       # ESLint, arregla lo que puede solo
+npm run format         # Prettier, reescribe los archivos
+npm run format:check   # Prettier, solo reporta (no toca nada) — esto es lo que corre en CI
+```
+
+## Qué corre en CI
+
+`.github/workflows/cypress.yml` tiene un job llamado **`lint`**, separado de
+`e2e-tests` y `visual-tests` (no necesita browser, así que es el más
+rápido de los tres):
+
+```yaml
+- run: npm run lint
+- run: npm run format:check
+```
+
+Si falla, aparece como su propio ❌ en la pestaña Actions — no se mezcla con
+un fallo del E2E. Y si falla junto con cualquier otro job, dispara la
+notificación de Slack igual que los demás (`notify-on-failure` depende de
+los 3: `lint`, `e2e-tests`, `visual-tests`).
+
+## Qué hacer si falla
+
+**Prettier (`format:check`) falla** → casi siempre es solo indentación o
+comillas. Corré:
+```bash
+npm run format
+```
+y commiteá el resultado. No hay que pensar nada, Prettier no tiene opinión
+que discutir.
+
+**ESLint (`lint`) falla** → leer el mensaje, es una regla real (variable
+sin usar, algo mal tipado, un `no-unused-expressions` que no sea la
+excepción de Chai ya cubierta). Si `lint:fix` no lo resuelve solo, hay que
+mirar la línea a mano.
+
+## Cómo se integró con el resto del repo
+
+- El skill `dev-workflow` y el agente `e2e-verifier` (`.claude/`) ya incluyen
+  `npm run lint` y `npm run format:check` como parte del checklist antes de
+  dar cualquier cambio por terminado — no es un paso opcional aparte.
+- La primera vez que corrió, atrapó un typo real (dos `cy.step(...)` sin
+  `;` en `add-products-to-cart.cy.ts`) — quedó documentado en
+  `docs/roadmap.md` punto 5/7 como evidencia de por qué esto importaba en
+  la práctica, no solo en teoría.

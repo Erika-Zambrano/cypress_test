@@ -1,3 +1,6 @@
+//La carpeta DOCS siempre la añado en el gitIgnore porue usuamente son archivos que uso para documentar lo que hago o información relevante que sé
+//que me ayudará después. Para esta prueba lo dejé fuera para que se pueda ver desde git.
+
 # Comandos de Cypress — referencia rápida
 
 Hay dos capas: los comandos reales de la CLI de Cypress, y los scripts de
