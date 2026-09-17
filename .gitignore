@@ -1,0 +1,11 @@
+node_modules/
+cypress/videos/
+cypress/screenshots/
+cypress/downloads/
+cypress.env.json
+.env
+npm-debug.log*
+*.log
+.DS_Store
+.omc/
+.claude/settings.local.json

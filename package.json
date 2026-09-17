@@ -1,0 +1,19 @@
+{
+  "name": "demoblaze-e2e-automation",
+  "version": "1.0.0",
+  "description": "Cypress and TypeScript end-to-end automation suite for the Demoblaze demo application",
+  "private": true,
+  "scripts": {
+    "cy:open": "cypress open",
+    "cy:run": "cypress run",
+    "cy:run:chrome": "cypress run --browser chrome",
+    "test:e2e": "cypress run --browser chrome --spec \"cypress/e2e/add-products-to-cart.cy.ts\"",
+    "test:visual": "cypress run --browser chrome --spec \"cypress/e2e/visual/home-page-visual.cy.ts\""
+  },
+  "devDependencies": {
+    "@testing-library/cypress": "^10.1.3",
+    "cypress": "^13.6.0",
+    "cypress-plugin-steps": "^1.2.1",
+    "typescript": "^5.4.0"
+  }
+}

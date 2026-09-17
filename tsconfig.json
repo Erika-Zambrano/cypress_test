@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020", "DOM"],
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "types": ["cypress", "node", "@testing-library/cypress", "cypress-plugin-steps"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "noEmit": true,
+    "baseUrl": ".",
+    "paths": {
+      "@pageObjects/*": ["cypress/pageObjects/*"],
+      "@support/*": ["cypress/support/*"]
+    }
+  },
+  "include": ["cypress/**/*.ts", "cypress.config.ts"]
+}
